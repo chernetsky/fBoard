@@ -41,10 +41,7 @@ if (!anychart['anychart-freeboard']) {
         // Create chart instance
         chart = eval(code1);
 
-        if (settings.theme) {
-          anychart.theme(anychart.themes[settings.theme]);
-        }
-
+        anychart.theme(anychart.themes[settings.theme]);
         anychart.appendTheme(anychart.themes.freeboard);
 
         if (!chart) return null;

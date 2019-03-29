@@ -85,7 +85,7 @@
         options: [
           {
             name: 'Default',
-            value: null
+            value: 'defaultTheme'
           },
           {
             name: 'Coffee',
