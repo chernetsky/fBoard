@@ -76,13 +76,13 @@
           }
         ]
       },
-      {
-        name: 'run_editor',
-        display_name: 'Run editor',
-        type: 'boolean',
-        default_value: true,
-        description: 'Run chart editor after close this dialog'
-      },
+      // {
+      //   name: 'run_editor',
+      //   display_name: 'Run editor',
+      //   type: 'boolean',
+      //   default_value: false,
+      //   description: 'Run chart editor after close this dialog'
+      // },
       // Hidden fields for widget inner purpose
       {
         name: 'chart_code',
