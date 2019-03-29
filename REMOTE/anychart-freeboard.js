@@ -16,17 +16,31 @@ if (!anychart['anychart-freeboard']) {
 
     var editor;
     var editorOptions = {
-      run: true,
-      complete: false
+      run: false,
+      complete: false,
+      measuresCount: -1,
+      customized: false
     };
 
     self.render = function(element) {
       container = element;
-      if (currentSettings.chart_code)
-        self.drawChart();
+
+      self.drawChart();
+
+      var dataRow = dataSet.row(0);
+      if (dataRow) {
+        var measuresCount = dataRow.length;
+        if (!editorOptions.customized && editorOptions.measuresCount !== measuresCount) {
+          self.rebuildChart(true);
+          editorOptions.measuresCount = measuresCount;
+        }
+      }
     };
 
     self.drawChart = function() {
+      if (!currentSettings.chart_code)
+        return;
+
       if (chart)
         chart.dispose();
 
@@ -55,50 +69,65 @@ if (!anychart['anychart-freeboard']) {
       }
     };
 
-    self.runEditor = function() {
+    self.initEditor = function(opt_dropOldChart) {
       if (!editor) {
-        editorOptions.run = false;
         editor = ac['editor'](currentSettings.chart_type);
-        editor.deserializeModel(currentSettings.editor_model);
         editor.step('data', false);
         editor.step('chart', false);
         editor.step('export', false);
         editor.data({data: dataSet});
 
-        editor.listen('editorComplete', function() {
-          // Get javascript code that creates configured chart
-          currentSettings.chart_code = editor['getJavascript']({
-            'minify': true,
-            'addData': false,
-            'addMarkers': true,
-            'wrapper': '',
-            'container': ''
-          });
-
-          currentSettings.editor_model = editor.serializeModel();
-
-          editorOptions.complete = true;
-          self.closeEditor();
-        });
-
-        editor.listen('close', function(evt) {
-          if (!editorOptions.complete && evt.target === editor)
-            self.closeEditor();
-        });
-
-        editorOptions.complete = false;
-        editor.dialogRender();
-        editor.dialogVisible(true, 'anychart-ce-freeboard-dialog');
+        if (!opt_dropOldChart && currentSettings.editor_model)
+          editor.deserializeModel(currentSettings.editor_model);
       }
     };
 
-    self.closeEditor = function() {
-      editor.dispose();
-      editor.removeAllListeners();
-      editor = null;
+    self.saveEditorState = function(opt_saveCode, opt_customized) {
+      editorOptions.run = false;
 
-      if (editorOptions.complete)
-        self.drawChart();
+      if (opt_saveCode) {
+        currentSettings.chart_code = editor['getJavascript']({
+          'minify': true,
+          'addData': false,
+          'addMarkers': true,
+          'wrapper': '',
+          'container': ''
+        });
+        currentSettings.editor_model = editor['serializeModel']();
+
+        editorOptions.customized = opt_customized ? 1 : editorOptions.customized;
+
+        var dataRow = dataSet.row(0);
+        editorOptions.measuresCount = dataRow.length;
+      }
+      editor['removeAllListeners']();
+      editor['dispose']();
+      editor = null;
+    };
+
+    self.rebuildChart = function(opt_dropOldChart) {
+      self.initEditor(opt_dropOldChart);
+      self.saveEditorState(true);
+      self.render(container);
+    };
+
+    self.openEditorDialog = function() {
+      self.initEditor();
+
+      editor['dialogRender']();
+      editor['dialogVisible'](true);
+
+      currentSettings.complete = false;
+      editor['listenOnce']('editorComplete', function() {
+        self.saveEditorState(true, true);
+        currentSettings.complete = true;
+        editor['dialogVisible'](false, true);
+      });
+
+      editor['listenOnce']('editorClose', function(evt) {
+        if (!currentSettings.complete && evt.target == editor)
+          self.saveEditorState();
+      });
     };
 
     self.onCalculatedValueChanged = function(settingName, newValue) {
@@ -107,20 +136,15 @@ if (!anychart['anychart-freeboard']) {
           dataSet.append(newValue);
           if (dataSet.getRowsCount() > currentSettings.max_points)
             dataSet.remove(0);
-
-          if (editorOptions.run) {
-            if (freeboard.isEditing())
-              self.runEditor();
-            else
-              editorOptions.run = false;
-          }
           break;
         }
       }
+
+      if (!currentSettings.chart_code)
+        self.render(container);
     };
 
     self.onSettingsChanged = function(newSettings) {
-      // console.log(currentSettings, newSettings);
       var previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
       currentSettings = newSettings;
 
@@ -142,6 +166,8 @@ if (!anychart['anychart-freeboard']) {
           dataSet.remove(0);
         }
       }
+
+      //self.render(container);
     };
 
     self.getHeight = function() {
