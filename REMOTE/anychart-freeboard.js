@@ -41,6 +41,12 @@ if (!anychart['anychart-freeboard']) {
         // Create chart instance
         chart = eval(code1);
 
+        if (settings.theme) {
+          anychart.theme(anychart.themes[settings.theme]);
+        }
+
+        anychart.appendTheme(anychart.themes.freeboard);
+
         if (!chart) return null;
 
         // Invoke second part of code: pass data and apply chart appearance settings
@@ -120,6 +126,11 @@ if (!anychart['anychart-freeboard']) {
       // console.log(currentSettings, newSettings);
       var previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
       currentSettings = newSettings;
+
+      if (previousSettings.theme !== currentSettings.theme) {
+        anychart.theme(anychart.themes[currentSettings.theme]);
+        anychart.appendTheme(anychart.themes.freeboard);
+      }
 
       if (newSettings.run_editor && freeboard.isEditing()) {
         editorOptions.run = true;
