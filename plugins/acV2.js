@@ -53,6 +53,14 @@
           {
             name: 'Column',
             value: 'column'
+          },
+          {
+            name: 'Scatter',
+            value: 'scatter'
+          },
+          {
+            name: 'Pie',
+            value: 'pie'
           }
         ]
       },
