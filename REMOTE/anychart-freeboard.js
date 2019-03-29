@@ -44,6 +44,9 @@ if (!anychart['anychart-freeboard']) {
       if (chart)
         chart.dispose();
 
+      anychart.theme(anychart.themes[currentSettings.theme]);
+      anychart.appendTheme(anychart.themes.freeboard);
+
       var codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
       if (codeSplit.length === 2) {
         // Chart creation code part
@@ -54,9 +57,7 @@ if (!anychart['anychart-freeboard']) {
 
         // Create chart instance
         chart = eval(code1);
-
-        anychart.theme(anychart.themes[currentSettings.theme]);
-        anychart.appendTheme(anychart.themes.freeboard);
+        window['chartInstance'] = chart;
 
         if (!chart) return null;
 

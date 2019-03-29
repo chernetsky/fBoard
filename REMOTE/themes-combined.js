@@ -9,10 +9,14 @@
       opt_scale, opt_zeroFillDecimals, opt_scaleSuffixSeparator, opt_useBracketsForNegative);
   };
   root['anychart']['themes']['freeboard'] = {
+    // 'defaultScaleSettings': {
+    //   'ordinal': {
+    //     'ticks': {
+    //       'maxCount': 5
+    //     }
+    //   }
+    // },
     'chart': {
-      // 'background': {
-      //   'fill': 'red'
-      // },
       'defaultSeriesSettings': {
         'base': {
           'tooltip': {
@@ -25,6 +29,15 @@
       }
     },
     'cartesianBase': {
+      'scales': [
+        {
+          'type': 'date-time',
+          'maxCount': 5
+        },
+        {
+          'type': 'linear'
+        }
+      ],
       'defaultSeriesSettings': {
         'base': {
           'normal': {
