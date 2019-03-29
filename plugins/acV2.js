@@ -18,7 +18,8 @@
       'https://cdn.anychart.com/releases/8.5.0/fonts/css/anychart-font.min.css',
       'http://127.0.0.1:8080/anychart-editor.min.js',
       'http://127.0.0.1:8080/anychart-editor.min.css',
-      'http://127.0.0.1:8080/anychart-freeboard.js'
+      'http://127.0.0.1:8080/anychart-freeboard.js',
+      'http://127.0.0.1:8080/themes-combined.js'
     ],
 
     fill_size: true,
@@ -74,6 +75,82 @@
             name: '4',
             value: 4
           }
+        ]
+      },
+      {
+        name: 'theme',
+        display_name: 'Select theme',
+        type: 'option',
+        default_value: 'Default',
+        options: [
+          {
+            name: 'Default',
+            value: null
+          },
+          {
+            name: 'Coffee',
+            value: 'coffee'
+          },
+          {
+            name: 'Dark blue',
+            value: 'darkBlue'
+          },
+          {
+            name: 'Dark earth',
+            value: 'darkEarth'
+          },
+          {
+            name: 'Dark glamour',
+            value: 'darkGlamour'
+          },
+          {
+            name: 'Dark provence',
+            value: 'darkProvence'
+          },
+          {
+            name: 'Dark turquoise',
+            value: 'darkTurquoise'
+          },
+          {
+            name: 'Light blue',
+            value: 'lightBlue'
+          },
+          {
+            name: 'Light earth',
+            value: 'lightEarth'
+          },
+          {
+            name: 'Light glamour',
+            value: 'lightGlamour'
+          },
+          {
+            name: 'Light provence',
+            value: 'lightProvence'
+          },
+          {
+            name: 'Light turquoise',
+            value: 'lightTurquoise'
+          },
+          {
+            name: 'Monochrome',
+            value: 'monochrome'
+          },
+          {
+            name: 'Morning',
+            value: 'morning'
+          },
+          {
+            name: 'Pastel',
+            value: 'pastel'
+          },
+          {
+            name: 'Sea',
+            value: 'sea'
+          },
+          {
+            name: 'Wines',
+            value: 'wines'
+          },
         ]
       },
       {
