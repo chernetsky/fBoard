@@ -81,7 +81,7 @@
         name: 'theme',
         display_name: 'Select theme',
         type: 'option',
-        default_value: 'Default',
+        default_value: 'defaultTheme',
         options: [
           {
             name: 'Default',
