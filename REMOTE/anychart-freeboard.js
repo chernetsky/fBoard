@@ -32,6 +32,9 @@ if (!anychart['anychart-freeboard']) {
       if (chart)
         chart.dispose();
 
+      anychart.theme(anychart.themes[currentSettings.theme]);
+      anychart.appendTheme(anychart.themes.freeboard);
+
       var codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
       if (codeSplit.length === 2) {
         // Chart creation code part
@@ -41,6 +44,7 @@ if (!anychart['anychart-freeboard']) {
 
         // Create chart instance
         chart = eval(code1);
+        window['chartInstance'] = chart;
 
         if (!chart) return null;
 
@@ -116,11 +120,10 @@ if (!anychart['anychart-freeboard']) {
           dataSet.append(newValue);
           if (dataSet.getRowsCount() > currentSettings.max_points)
             dataSet.remove(0);
-          
-          var measuresCount = newValue.length;
-          if (editorOptions.measuresCount !== measuresCount) {
-            self.rebuildChart(true);
-            editorOptions.measuresCount = measuresCount;
+var measuresCount = newValue.length;
+          if (editorOptions.measuresCount !== measuresCount){
+              self.rebuildChart(true);
+              editorOptions.measuresCount = measuresCount;
           }
           break;
         }
@@ -133,6 +136,17 @@ if (!anychart['anychart-freeboard']) {
     self.onSettingsChanged = function(newSettings) {
       var previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
       currentSettings = newSettings;
+
+      if (previousSettings.theme !== currentSettings.theme) {
+        anychart.theme(anychart.themes[currentSettings.theme]);
+        anychart.appendTheme(anychart.themes.freeboard);
+      }
+
+      if (newSettings.run_editor && freeboard.isEditing()) {
+        editorOptions.run = true;
+      } else {
+        self.drawChart();
+      }
 
       if (previousSettings.max_points !== newSettings.max_points) {
         newSettings.max_points = newSettings.max_points > 0 ? newSettings.max_points : previousSettings.max_points;
