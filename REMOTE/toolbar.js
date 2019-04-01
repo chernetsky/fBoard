@@ -1,26 +1,7 @@
-class AnychartTab extends EventTarget {
-  /**
-   * Constructor.
-   * @param {number} index - Tab index.
-   * @param {Object=} opt_options - Options.
-   */
-  constructor(index, opt_options) {
-    super();
-    this.index = index;
-    this.options = opt_options || {};
-  }
-
-  getTitle() {
-    return this.options.title || `Tab #${this.index}`;
-  }
-
-  getContent() {
-    return $('<p>Anychart Settings<br/><img src="https://sw.kovidgoyal.net/kitty/_static/kitty.png"></p>');
-  }
-}
-
-
-class AnychartSettings extends EventTarget {
+/**
+ *
+ */
+class AcToolbar extends EventTarget {
   /**
    * Constructor.
    * @param {Element} element - Related dom reference.
@@ -28,6 +9,7 @@ class AnychartSettings extends EventTarget {
    */
   constructor(element, opt_options) {
     super();
+
     /**
      * Wrapped element.
      * @type {jQuery}
@@ -49,18 +31,11 @@ class AnychartSettings extends EventTarget {
   getDialogOkCallback() {
     const self = this;
     return () => {
-      const ev = self.createEvent(AnychartSettings.EventType.AC_SETTINGS_APPLY);
+      const ev = self.createEvent(AcToolbar.EventType.AC_SETTINGS_APPLY);
       return !self.dispatchEvent(ev);
     };
   }
 
-  /**
-   *
-   * @return {jQuery|HTMLElement}
-   */
-  getDialogContent() {
-    return $('<p>Anychart Settings</p>');
-  }
 
   /**
    *
@@ -86,7 +61,11 @@ class AnychartSettings extends EventTarget {
    * @return {!DialogBox}
    */
   getDialog() {
-    return new DialogBox(this.getDialogContent(), "Anychart Settings", "Apply", "Cancel", this.getDialogOkCallback());
+    const content = $('<h2>Anychart License Text Title</h2>' +
+        '<p><a href="http://anychart.com" target="_blank">Lorem Ipsum is simply dummy text</a> of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>' +
+        '<p>It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>')
+
+    return new DialogBox(content, "Anychart License Dialog Title", "Ok", null, this.getDialogOkCallback());
   }
 
   /**
@@ -96,9 +75,11 @@ class AnychartSettings extends EventTarget {
   getSettingsButtonClickCallback() {
     const self = this;
     return (e) => {
-      const ev = self.createEvent(AnychartSettings.EventType.AC_DIALOG_SHOW, {originalEvent: e});
-      if (self.dispatchEvent(ev))
+      const ev = self.createEvent(AcToolbar.EventType.AC_DIALOG_SHOW, {originalEvent: e});
+      if (self.dispatchEvent(ev)) {
+        // Show license dialog
         self.getDialog();
+      }
     }
   }
 
@@ -131,20 +112,15 @@ class AnychartSettings extends EventTarget {
    * Adds settings button.
    */
   wrapFreeboardTools() {
-    const e = this.createEvent(AnychartSettings.EventType.AC_WRAP_TOOLS);
+    const e = this.createEvent(AcToolbar.EventType.AC_WRAP_TOOLS);
     if (this.dispatchEvent(e)) {
       const tools = this.getToolsElement();
       const settingsButton = this.getSettingsButton();
-      tools.append(settingsButton);
+      tools.prepend(settingsButton);
     }
   }
 
-  render() {
-    console.log('TBA');
-  }
-
   dispose() {
-    this.removeAllListeners();
     this.element = null;
   }
 }
@@ -154,7 +130,7 @@ class AnychartSettings extends EventTarget {
  * Anychart settings event types.
  * @enum {string}
  */
-AnychartSettings.EventType = {
+AcToolbar.EventType = {
   AC_WRAP_TOOLS: 'acwraptools',
   AC_DIALOG_SHOW: 'acdialogshow',
   AC_SETTINGS_APPLY: 'acsettingsapply'

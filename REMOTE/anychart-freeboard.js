@@ -1,54 +1,47 @@
 if (!anychart['anychart-freeboard']) {
-  /**
-   * Global anychart object
-   */
-  var ac;
-
   anychart['anychart-freeboard'] = function(settings){
-    var ac = anychart;
-    var self = this;
+    const ac = window['anychart'];
+    const self = this;
 
-    var currentSettings = settings;
-    var container;
+    let currentSettings = settings;
+    let container;
 
-    var chart;
-    var dataSet = ac.data.set();
-    var acSettings;
+    const dataSet = ac.data.set();
+    let chart;
+    let toolbar;
 
-    var editor;
-    var editorOptions = {
+    let editor;
+    let editorOptions = {
+      measuresCount: -1,
       complete: false,
-      measuresCount: -1
+      customized: false
     };
 
-    self.acWrapToolsHandler = function(e) {
-      console.log(e.acMessage);
-    };
 
-    self.acDialogShowHandler = function(e) {
-      console.log(e.acMessage);
-    };
+    self.toolbarDialogShowHandler = function(evt) {
+      // todo: Check license
+      const licenseStatus = true;
 
-    self.acSettingsApply = function(e) {
-      console.log(e.acMessage);
-    };
-
-    self.initAnychartSettings = function(element) {
-      if (!acSettings) {
-        acSettings = new AnychartSettings(element);
-        acSettings.addEventListener(AnychartSettings.EventType.AC_WRAP_TOOLS, self.acWrapToolsHandler);
-        acSettings.addEventListener(AnychartSettings.EventType.AC_DIALOG_SHOW, self.acDialogShowHandler);
-        acSettings.addEventListener(AnychartSettings.EventType.AC_SETTINGS_APPLY, self.acSettingsApply);
-        acSettings.wrapFreeboardTools();
+      if (licenseStatus) {
+        evt.preventDefault();
+        self.openEditorDialog();
+        return false;
       }
+      return true;
     };
+
 
     self.render = function(element) {
-      self.initAnychartSettings(element);
+      if (!toolbar) {
+        toolbar = new AcToolbar(element);
+        toolbar.wrapFreeboardTools();
+        toolbar.addEventListener(AcToolbar.EventType.AC_DIALOG_SHOW, self.toolbarDialogShowHandler);
+      }
 
       container = element;
       self.drawChart();
     };
+
 
     self.drawChart = function() {
       if (!currentSettings.chart_code)
@@ -57,31 +50,30 @@ if (!anychart['anychart-freeboard']) {
       if (chart)
         chart.dispose();
 
-      anychart.theme(anychart.themes[currentSettings.theme]);
-      anychart.appendTheme(anychart.themes.freeboard);
+      ac['theme'](ac['themes'][currentSettings.theme]);
+      ac['appendTheme'](ac['themes']['freeboard']);
 
-      var codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
+      const codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
       if (codeSplit.length === 2) {
         // Chart creation code part
-        var code1 = '(function(){' + codeSplit[0] + 'return chart;})();';
+        const code1 = '(function(){' + codeSplit[0] + 'return chart;})();';
         // Data apply and chart settings code part
-        var code2 = '(function(){ return function(chart, dataSet){' + codeSplit[1] + '}})();';
+        const code2 = '(function(){ return function(chart, dataSet){' + codeSplit[1] + '}})();';
 
         // Create chart instance
         chart = eval(code1);
-        window['chartInstance'] = chart;
 
         if (!chart) return null;
 
         // Invoke second part of code: pass data and apply chart appearance settings
-        var code2func = eval(code2);
+        const code2func = eval(code2);
         code2func.apply(null, [chart, dataSet]);
 
-        chart['background']('grey'); //TODO (A.Kudryavtsev): Remove.
         chart['container'](container);
         chart['draw']();
       }
     };
+
 
     self.initEditor = function(opt_dropOldChart) {
       if (!editor) {
@@ -92,12 +84,13 @@ if (!anychart['anychart-freeboard']) {
         editor.data({data: dataSet});
 
         if (!opt_dropOldChart && currentSettings.editor_model)
-          editor.deserializeModel(currentSettings.editor_model);
+          editor['deserializeModel'](currentSettings.editor_model);
       }
     };
 
     self.saveEditorState = function(opt_saveCode) {
       if (opt_saveCode) {
+        console.log("Save code");
         currentSettings.chart_code = editor['getJavascript']({
           'minify': true,
           'addData': false,
@@ -107,13 +100,15 @@ if (!anychart['anychart-freeboard']) {
         });
         currentSettings.editor_model = editor['serializeModel']();
 
-        var dataRow = dataSet.row(0);
+        const dataRow = dataSet.row(0);
         editorOptions.measuresCount = dataRow.length;
       }
+      console.log("Dispose editor");
       editor['removeAllListeners']();
       editor['dispose']();
       editor = null;
     };
+
 
     self.rebuildChart = function(opt_dropOldChart) {
       self.initEditor(opt_dropOldChart);
@@ -121,24 +116,26 @@ if (!anychart['anychart-freeboard']) {
       self.render(container);
     };
 
+
     self.openEditorDialog = function() {
       self.initEditor();
 
       editor['dialogRender']();
       editor['dialogVisible'](true);
 
-      currentSettings.complete = false;
+      editorOptions.complete = false;
       editor['listenOnce']('editorComplete', function() {
         self.saveEditorState(true, true);
-        currentSettings.complete = true;
+        editorOptions.complete = true;
         editor['dialogVisible'](false, true);
       });
 
       editor['listenOnce']('editorClose', function(evt) {
-        if (!currentSettings.complete && evt.target == editor)
+        if (!editorOptions.complete && evt.target === editor)
           self.saveEditorState();
       });
     };
+
 
     self.onCalculatedValueChanged = function(settingName, newValue) {
       switch (settingName) {
@@ -146,8 +143,9 @@ if (!anychart['anychart-freeboard']) {
           dataSet.append(newValue);
           if (dataSet.getRowsCount() > currentSettings.max_points)
             dataSet.remove(0);
-var measuresCount = newValue.length;
-          if (editorOptions.measuresCount !== measuresCount){
+
+          const measuresCount = newValue.length;
+          if (!editorOptions.customized && editorOptions.measuresCount !== measuresCount){
               self.rebuildChart(true);
               editorOptions.measuresCount = measuresCount;
           }
@@ -159,24 +157,14 @@ var measuresCount = newValue.length;
         self.render(container);
     };
 
+
     self.onSettingsChanged = function(newSettings) {
-      var previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
+      const previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
       currentSettings = newSettings;
-
-      if (previousSettings.theme !== currentSettings.theme) {
-        anychart.theme(anychart.themes[currentSettings.theme]);
-        anychart.appendTheme(anychart.themes.freeboard);
-      }
-
-      if (newSettings.run_editor && freeboard.isEditing()) {
-        editorOptions.run = true;
-      } else {
-        self.drawChart();
-      }
 
       if (previousSettings.max_points !== newSettings.max_points) {
         newSettings.max_points = newSettings.max_points > 0 ? newSettings.max_points : previousSettings.max_points;
-        var rowsToRemove = dataSet.getRowsCount() - newSettings.max_points;
+        let rowsToRemove = dataSet['getRowsCount']() - newSettings.max_points;
         for (; rowsToRemove > 0; rowsToRemove--) {
           dataSet.remove(0);
         }
@@ -187,17 +175,18 @@ var measuresCount = newValue.length;
       }
     };
 
+
     self.getHeight = function() {
-      var size = Number(currentSettings.size);
+      const size = Number(currentSettings.size);
       return !isNaN(size) ? size : 2;
     };
 
+
     self.onDispose = function() {
-      if (acSettings) {
-        acSettings.removeEventListener(AnychartSettings.EventType.AC_WRAP_TOOLS, self.acWrapToolsHandler);
-        acSettings.removeEventListener(AnychartSettings.EventType.AC_DIALOG_SHOW, self.acDialogShowHandler);
-        acSettings.dispose();
+      if (toolbar) {
+        toolbar.dispose();
       }
+
       if (chart) {
         chart.dispose();
         dataSet.dispose();

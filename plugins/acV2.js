@@ -16,10 +16,14 @@
     external_scripts: [
       'https://cdn.anychart.com/releases/8.5.0/js/anychart-bundle.min.js',
       'https://cdn.anychart.com/releases/8.5.0/fonts/css/anychart-font.min.css',
-      '/fBoard/REMOTE/anychart-editor.min.js',
-      '/fBoard/REMOTE/anychart-editor.min.css',
-      '/fBoard/REMOTE/anychart-freeboard.js',
-      '/fBoard/REMOTE/themes-combined.js'
+      '/freeboard/REMOTE/lib/anychart-editor.min.js',
+      '/freeboard/REMOTE/lib/anychart-editor.min.css',
+
+      '/freeboard/REMOTE/anychart-freeboard.js',
+      '/freeboard/REMOTE/themes-combined.js',
+      '/freeboard/REMOTE/toolbar.js',
+      '/freeboard/REMOTE/license-checker.js'
+
     ],
 
     fill_size: true,
