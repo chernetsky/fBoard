@@ -13,6 +13,7 @@ if (!anychart['anychart-freeboard']) {
 
     var chart;
     var dataSet = ac.data.set();
+    var acSettings;
 
     var editor;
     var editorOptions = {
@@ -22,7 +23,31 @@ if (!anychart['anychart-freeboard']) {
       customized: false
     };
 
+    self.acWrapToolsHandler = function(e) {
+      console.log(e.acMessage);
+    };
+
+    self.acDialogShowHandler = function(e) {
+      console.log(e.acMessage);
+    };
+
+    self.acSettingsApply = function(e) {
+      console.log(e.acMessage);
+    };
+
+    self.initAnychartSettings = function(element) {
+      if (!acSettings) {
+        acSettings = new AnychartSettings(element);
+        acSettings.addEventListener(AnychartSettings.EventType.AC_WRAP_TOOLS, self.acWrapToolsHandler);
+        acSettings.addEventListener(AnychartSettings.EventType.AC_DIALOG_SHOW, self.acDialogShowHandler);
+        acSettings.addEventListener(AnychartSettings.EventType.AC_SETTINGS_APPLY, self.acSettingsApply);
+        acSettings.wrapFreeboardTools();
+      }
+    };
+
     self.render = function(element) {
+      self.initAnychartSettings(element);
+
       container = element;
 
       self.drawChart();
@@ -61,6 +86,7 @@ if (!anychart['anychart-freeboard']) {
         var code2func = eval(code2);
         code2func.apply(null, [chart, dataSet]);
 
+        chart['background']('grey'); //TODO (A.Kudryavtsev): Remove.
         chart['container'](container);
         chart['draw']();
       }
@@ -162,6 +188,11 @@ if (!anychart['anychart-freeboard']) {
     };
 
     self.onDispose = function() {
+      if (acSettings) {
+        acSettings.removeEventListener(AnychartSettings.EventType.AC_WRAP_TOOLS, self.acWrapToolsHandler);
+        acSettings.removeEventListener(AnychartSettings.EventType.AC_DIALOG_SHOW, self.acDialogShowHandler);
+        acSettings.dispose();
+      }
       if (chart) {
         chart.dispose();
         dataSet.dispose();
