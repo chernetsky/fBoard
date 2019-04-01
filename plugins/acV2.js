@@ -16,10 +16,10 @@
     external_scripts: [
       'https://cdn.anychart.com/releases/8.5.0/js/anychart-bundle.min.js',
       'https://cdn.anychart.com/releases/8.5.0/fonts/css/anychart-font.min.css',
-      'http://127.0.0.1:8080/anychart-editor.min.js',
-      'http://127.0.0.1:8080/anychart-editor.min.css',
-      'http://127.0.0.1:8080/anychart-freeboard.js',
-      'http://127.0.0.1:8080/themes-combined.js'
+      '/fBoard/REMOTE/anychart-editor.min.js',
+      '/fBoard/REMOTE/anychart-editor.min.css',
+      '/fBoard/REMOTE/anychart-freeboard.js',
+      '/fBoard/REMOTE/themes-combined.js'
     ],
 
     fill_size: true,
@@ -165,7 +165,7 @@
           {
             name: 'Wines',
             value: 'wines'
-          },
+          }
         ]
       },
       // Hidden fields for widget inner purpose
