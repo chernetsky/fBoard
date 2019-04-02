@@ -74,7 +74,7 @@ if (!anychart['anychart-freeboard']) {
     };
 
 
-    self.initEditor = function(opt_dropOldChart) {
+    self.initEditor = function(opt_autoChart) {
       if (!editor) {
         editor = ac['editor'](currentSettings.chart_type);
         editor.step('data', false);
@@ -82,8 +82,9 @@ if (!anychart['anychart-freeboard']) {
         editor.step('export', false);
         editor.data({data: dataSet});
 
-        if (!opt_dropOldChart && currentSettings.editor_model)
+        if (!opt_autoChart && currentSettings.editor_model) {
           editor['deserializeModel'](currentSettings.editor_model);
+        }
       }
     };
 
@@ -108,8 +109,8 @@ if (!anychart['anychart-freeboard']) {
     };
 
 
-    self.rebuildChart = function() {
-      self.initEditor(true);
+    self.rebuildChart = function(opt_autoChart) {
+      self.initEditor(opt_autoChart);
       self.saveEditorState();
     };
 
@@ -145,7 +146,7 @@ if (!anychart['anychart-freeboard']) {
 
           const measuresCount = newValue.length;
           if (!currentSettings.customized && editorOptions.measuresCount !== measuresCount) {
-            self.rebuildChart();
+            self.rebuildChart(true);
             editorOptions.measuresCount = measuresCount;
           }
           break;
@@ -169,8 +170,12 @@ if (!anychart['anychart-freeboard']) {
         }
       }
 
+      if (previousSettings.theme !== newSettings.theme) {
+        self.render(container);
+      }
+
       if (previousSettings.chart_type !== newSettings.chart_type) {
-        self.rebuildChart();
+        self.rebuildChart(true);
       }
     };
 

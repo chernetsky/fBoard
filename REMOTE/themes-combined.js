@@ -2,20 +2,13 @@
 (function(root) {
   root['anychart'] = root['anychart'] || {};
   root['anychart']['themes'] = root['anychart']['themes'] || {};
-  var VALUE_TOKEN_DECIMALS_SCALED = '{%value}{decimalsCount:2,scale:(1)(1000)(1000)(1000)|()(k)(M)(B)}';
-  var locNum = function(val, opt_decimalsCountOrLocale, opt_decimalPoint, opt_groupsSeparator, opt_scale, opt_zeroFillDecimals, opt_scaleSuffixSeparator, opt_useBracketsForNegative) {
-    var val_ = (val === null) || (typeof val === 'boolean') || (val === '') ? NaN : +/** @type {number} */(val);
+  const VALUE_TOKEN_DECIMALS_SCALED = '{%value}{decimalsCount:2,scale:(1)(1000)(1000)(1000)|()(k)(M)(B)}';
+  const locNum = function(val, opt_decimalsCountOrLocale, opt_decimalPoint, opt_groupsSeparator, opt_scale, opt_zeroFillDecimals, opt_scaleSuffixSeparator, opt_useBracketsForNegative) {
+    const val_ = (val === null) || (typeof val === 'boolean') || (val === '') ? NaN : +/** @type {number} */(val);
     return isNaN(val_) ? val : anychart.format.number(val_, opt_decimalsCountOrLocale, opt_decimalPoint, opt_groupsSeparator,
       opt_scale, opt_zeroFillDecimals, opt_scaleSuffixSeparator, opt_useBracketsForNegative);
   };
   root['anychart']['themes']['freeboard'] = {
-    // 'defaultScaleSettings': {
-    //   'ordinal': {
-    //     'ticks': {
-    //       'maxCount': 5
-    //     }
-    //   }
-    // },
     'chart': {
       'defaultSeriesSettings': {
         'base': {
@@ -29,15 +22,15 @@
       }
     },
     'cartesianBase': {
-      'scales': [
-        {
-          'type': 'date-time',
-          'maxCount': 5
-        },
-        {
-          'type': 'linear'
-        }
-      ],
+      // 'scales': [
+      //   {
+      //     'type': 'date-time',
+      //     'maxCount': 5
+      //   },
+      //   {
+      //     'type': 'linear'
+      //   }
+      // ],
       'defaultSeriesSettings': {
         'base': {
           'normal': {
