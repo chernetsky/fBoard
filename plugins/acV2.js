@@ -9,6 +9,33 @@
   })();
 
 
+  $.get("https://freeboard.io/account/settings").done(
+      function(data) {
+        //console.log(data);
+        const e = new RegExp("%22username%22%3A%22(.*)data-billing");
+        const infoString = decodeURI(data.match(e)[0]).replace(/%3A/g, ":").replace(/%2C/g, ", ");
+        console.log("USER", infoString);
+      })
+      .fail(function() {
+        console.log("Get user info fail");
+      })
+      .always(function() {
+        console.log("Get user info always");
+      });
+
+  freeboard.on('dashboard_loaded', (evt) => {
+    console.log("Callback 2 dashboard_loaded", evt);
+  });
+
+  freeboard.on('initialized', (evt) => {
+    console.log("Callback 2 initialized", evt);
+  });
+
+  // const remoteBaseUrl = '/freeboard/REMOTE';
+
+  // https://static.anychart.com/demos/freeboard20/acV2.js
+  const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
+
   freeboard.loadWidgetPlugin({
     type_name: 'anychart_freeboard_plugin',
     display_name: 'Anychart',
@@ -16,13 +43,14 @@
     external_scripts: [
       'https://cdn.anychart.com/releases/8.5.0/js/anychart-bundle.min.js',
       'https://cdn.anychart.com/releases/8.5.0/fonts/css/anychart-font.min.css',
-      '/freeboard/REMOTE/lib/anychart-editor.min.js',
-      '/freeboard/REMOTE/lib/anychart-editor.min.css',
 
-      '/freeboard/REMOTE/anychart-freeboard.js',
-      '/freeboard/REMOTE/themes-combined.js',
-      '/freeboard/REMOTE/toolbar.js',
-      '/freeboard/REMOTE/license-checker.js'
+      remoteBaseUrl + '/lib/anychart-editor.min.js',
+      remoteBaseUrl + '/lib/anychart-editor.min.css',
+
+      remoteBaseUrl + '/anychart-freeboard.js',
+      remoteBaseUrl + '/themes-combined.js',
+      remoteBaseUrl + '/toolbar.js',
+      remoteBaseUrl + '/license-checker.js'
 
     ],
 
