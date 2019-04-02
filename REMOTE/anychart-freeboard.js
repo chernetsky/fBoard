@@ -13,8 +13,7 @@ if (!anychart['anychart-freeboard']) {
     let editor;
     let editorOptions = {
       measuresCount: -1,
-      complete: false,
-      customized: false
+      complete: false
     };
 
 
@@ -88,9 +87,9 @@ if (!anychart['anychart-freeboard']) {
       }
     };
 
-    self.saveEditorState = function(opt_saveCode) {
-      if (opt_saveCode) {
-        console.log("Save code");
+
+    self.saveEditorState = function(opt_doNotSave) {
+      if (!opt_doNotSave) {
         currentSettings.chart_code = editor['getJavascript']({
           'minify': true,
           'addData': false,
@@ -100,20 +99,18 @@ if (!anychart['anychart-freeboard']) {
         });
         currentSettings.editor_model = editor['serializeModel']();
 
-        const dataRow = dataSet.row(0);
-        editorOptions.measuresCount = dataRow.length;
+        self.render(container);
       }
-      console.log("Dispose editor");
+
       editor['removeAllListeners']();
       editor['dispose']();
       editor = null;
     };
 
 
-    self.rebuildChart = function(opt_dropOldChart) {
-      self.initEditor(opt_dropOldChart);
-      self.saveEditorState(true);
-      self.render(container);
+    self.rebuildChart = function() {
+      self.initEditor(true);
+      self.saveEditorState();
     };
 
 
@@ -125,14 +122,16 @@ if (!anychart['anychart-freeboard']) {
 
       editorOptions.complete = false;
       editor['listenOnce']('editorComplete', function() {
-        self.saveEditorState(true, true);
         editorOptions.complete = true;
+        currentSettings.customized = 1;
         editor['dialogVisible'](false, true);
+
+        self.saveEditorState();
       });
 
       editor['listenOnce']('editorClose', function(evt) {
         if (!editorOptions.complete && evt.target === editor)
-          self.saveEditorState();
+          self.saveEditorState(true);
       });
     };
 
@@ -145,9 +144,9 @@ if (!anychart['anychart-freeboard']) {
             dataSet.remove(0);
 
           const measuresCount = newValue.length;
-          if (!editorOptions.customized && editorOptions.measuresCount !== measuresCount){
-              self.rebuildChart(true);
-              editorOptions.measuresCount = measuresCount;
+          if (!currentSettings.customized && editorOptions.measuresCount !== measuresCount) {
+            self.rebuildChart();
+            editorOptions.measuresCount = measuresCount;
           }
           break;
         }
@@ -171,7 +170,7 @@ if (!anychart['anychart-freeboard']) {
       }
 
       if (previousSettings.chart_type !== newSettings.chart_type) {
-        self.rebuildChart(true);
+        self.rebuildChart();
       }
     };
 

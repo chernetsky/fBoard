@@ -5,7 +5,7 @@
   (function() {
     freeboard.addStyle("#setting-row-chart_code", "display:none");
     freeboard.addStyle("#setting-row-editor_model", "display:none");
-    freeboard.addStyle("#setting-row-widget_id", "display:none");
+    // freeboard.addStyle("#setting-row-customized", "display:none");
   })();
 
 
@@ -89,13 +89,6 @@
           }
         ]
       },
-      // {
-      //   name: 'run_editor',
-      //   display_name: 'Run editor',
-      //   type: 'boolean',
-      //   default_value: false,
-      //   description: 'Run chart editor after close this dialog'
-      // },
       {
         name: 'theme',
         display_name: 'Select theme',
@@ -186,8 +179,9 @@
         description: "This field is for widget's internal using purpose"
       },
       {
-        name: 'widget_id',
-        type: 'text',
+        name: 'customized',
+        type: 'number',
+        default_value: 0,
         description: "This field is for widget's internal using purpose"
       }
     ],
