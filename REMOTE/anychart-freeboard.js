@@ -64,6 +64,11 @@ if (!anychart['anychart-freeboard']) {
 
         if (!chart) return null;
 
+        // Add and configure default datetime scale
+        const dateTimeScale = ac['scales']['dateTime']();
+        dateTimeScale.ticks().count(5);
+        chart['xScale'](dateTimeScale);
+
         // Invoke second part of code: pass data and apply chart appearance settings
         const code2func = eval(code2);
         code2func.apply(null, [chart, dataSet]);
