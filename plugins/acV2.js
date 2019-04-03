@@ -21,10 +21,10 @@
 
   // freeboard.on('dashboard_loaded', getUserInfo);
   // freeboard.on('initialized', getUserInfo);
-  const remoteBaseUrl = '/freeboard/REMOTE';
+  // const remoteBaseUrl = '/freeboard/REMOTE';
 
   // https://static.anychart.com/demos/freeboard20/acV2.js
-  // const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
+  const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
 
   freeboard.loadWidgetPlugin({
     type_name: 'anychart_freeboard_plugin',
@@ -39,8 +39,7 @@
 
       remoteBaseUrl + '/anychart-freeboard.js',
       remoteBaseUrl + '/themes-combined.js',
-      remoteBaseUrl + '/toolbar.js',
-      remoteBaseUrl + '/license-checker.js'
+      remoteBaseUrl + '/toolbar.js'
     ],
 
     fill_size: true,

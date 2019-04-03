@@ -1,6 +1,4 @@
 if (!anychart['anychart-freeboard']) {
-  freeboard.addStyle(".anychart-credits-text", "color:red;");
-
   let licenseStatus = {checked: false};
   let dashboardInfo = {};
 
@@ -227,6 +225,7 @@ if (!anychart['anychart-freeboard']) {
     self.saveEditorState = function(opt_doNotSave) {
       if (!opt_doNotSave) {
         let overrides = [];
+        freeboard.addStyle(".anychart-credits-text", "color:black;");
         switch (licenseStatus.license) {
           case 'valid':
             overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': false});
@@ -235,7 +234,7 @@ if (!anychart['anychart-freeboard']) {
             overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
             overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'ANYCHART EXPIRED LICENSE'});
             overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-expired'});
-            //addCSSRule(document.styleSheets[0], ".anychart-credits-text", "color", "red");
+            freeboard.addStyle(".anychart-credits-text", "color:red;");
             break;
           default: {
             // trial, invalid, Not processed
