@@ -1,15 +1,17 @@
 if (!anychart['anychart-freeboard']) {
+  freeboard.addStyle(".anychart-credits-text", "color:red;");
+
+  let licenseStatus = {checked: false};
   let dashboardInfo = {};
 
   const getUserInfo = () => {
     return new Promise((resolve, reject) => {
-      if (typeof dashboardInfo.dashboardId !== 'undefined') {
+      if (licenseStatus.checked || typeof dashboardInfo.dashboardId !== 'undefined') {
         resolve(dashboardInfo);
 
       } else {
         let userInfo = {};
         const startPromise = new Promise((resolve, reject) => resolve(true));
-
         startPromise
             .then(r => {
               // Try to get dashboard id
@@ -18,7 +20,7 @@ if (!anychart['anychart-freeboard']) {
                 userInfo.dashboardId = pathParts[2];
                 return userInfo;
               } else
-                throw null;
+                throw {};
             })
             .then(r => {
               if (r)
@@ -59,42 +61,77 @@ if (!anychart['anychart-freeboard']) {
     });
   };
 
-  // Check license
-  (() => {
-    getUserInfo()
-        .then((r) => {
-          console.log("Check license with", dashboardInfo);
-          if (r && r.dashboardId) {
-            dashboardInfo = r;
-
-            // todo: Сделать правильный url
-            const licenseUrl = 'https://anychart.com/license_server_url';
-
-            return fetch(licenseUrl);
-          } else
-            throw false;
-        })
-        .then(function(r) {
-          if (r.ok)
-            return r.json();
-          else
-            throw false;
-        })
-        .catch(function(r){
-          // todo: debug here
-          return {license: "valid", daysLeft: 90};
-          // return {license: "trial", daysLeft: 108};
-          // return {license: "expired", daysLeft: 0};
-          // return {license: "Not processed", daysLeft: 0};
-        })
-        .then(function(r) {
-          console.log("License server response", r);
-        });
-  })();
-
   anychart['anychart-freeboard'] = function(settings){
-    const ac = window['anychart'];
     const self = this;
+
+    // Check license
+    if (!licenseStatus.checked) {
+      getUserInfo()
+          .then((r) => {
+            if (licenseStatus.checked) {
+              // Already checked in another instance
+              throw true;
+
+            } else if (r || r.dashboardId) {
+              dashboardInfo = r;
+
+              // todo: Сделать правильный url
+              const licenseUrl = 'https://anychart.com/license_server_url';
+              return fetch(licenseUrl);
+
+            } else {
+              // User info is invalid
+              throw false;
+            }
+          })
+          .then(function(r) {
+            if (r.ok)
+              return r.json();
+            else {
+              // Server error
+              throw false;
+            }
+          })
+          .catch(function(r) {
+            if (r === true) {
+              // License already checked
+              return licenseStatus;
+            } else {
+              // If something wrong
+              // todo: debug responses here
+              // return {license: "valid", daysLeft: 90};
+              // Вызывыаем CE
+              // Credits убираем
+
+              // return {license: "trial", daysLeft: 108};
+              // Вызывыаем CE
+              // Credits: Trial
+
+              return {license: "expired", daysLeft: 0};
+              // Модальное окно с поле для ввода кода
+              // Credits: LICENSE EXPIRED
+
+              // return {license: "invalid", daysLeft: 0};
+              // Не совпадают тарифные планы
+              // Модальное окно с поле для ввода кода
+              // Credits: Trial
+
+              // return {license: "Not processed", daysLeft: 0};
+              // Ошибка сервера и т.п.
+              // Модальное окно с поле для ввода кода
+              // Credits: Trial
+            }
+          })
+          .then(function(r) {
+            console.log("Response", r);
+            licenseStatus = r;
+            licenseStatus.checked = true;
+            self.rebuildChart();
+          });
+    }
+
+    const ac = window['anychart'];
+    ac['licenseKey']('qlik3-dbf550c-dca27a7');
 
     let currentSettings = settings;
     let container;
@@ -189,13 +226,32 @@ if (!anychart['anychart-freeboard']) {
 
     self.saveEditorState = function(opt_doNotSave) {
       if (!opt_doNotSave) {
+        let overrides = [];
+        switch (licenseStatus.license) {
+          case 'valid':
+            overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': false});
+            break;
+          case 'expired':
+            overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'ANYCHART EXPIRED LICENSE'});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-expired'});
+            //addCSSRule(document.styleSheets[0], ".anychart-credits-text", "color", "red");
+            break;
+          default: {
+            // trial, invalid, Not processed
+            overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'AnyChart Trial Version'});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-trial'});
+          }
+        }
+
         currentSettings.chart_code = editor['getJavascript']({
           'minify': true,
           'addData': false,
           'addMarkers': true,
           'wrapper': '',
           'container': ''
-        });
+        }, overrides);
         currentSettings.editor_model = editor['serializeModel']();
 
         self.render(container);
