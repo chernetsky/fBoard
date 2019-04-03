@@ -8,28 +8,19 @@
     freeboard.addStyle("#setting-row-customized", "display:none");
   })();
 
+  /**
+   * data-user
+   *
+   * %7B%22_id%22%3A%225ca3275eed6bba140a000143%22%2C%22username%22%3A%22cherwekopff%22%2C%22email%22%3A%22info@cherveferma.ru%22%7D
+   */
 
-  $.get("https://freeboard.io/account/settings").done(
-      function(data) {
-        //console.log(data);
-        const e = new RegExp("%22username%22%3A%22(.*)data-billing");
-        const infoString = decodeURI(data.match(e)[0]).replace(/%3A/g, ":").replace(/%2C/g, ", ");
-        console.log("USER", infoString);
-      })
-      .fail(function() {
-        console.log("Get user info fail");
-      })
-      .always(function() {
-        console.log("Get user info always");
-      });
+  /**
+   * data-billing
+   * %7B%22planID%22%3A%22free%22%2C%22haveCreditCard%22%3Afalse%7D
+   */
 
-  freeboard.on('dashboard_loaded', (evt) => {
-    console.log("Callback 2 dashboard_loaded", evt);
-  });
-
-  freeboard.on('initialized', (evt) => {
-    console.log("Callback 2 initialized", evt);
-  });
+  // freeboard.on('dashboard_loaded', getUserInfo);
+  // freeboard.on('initialized', getUserInfo);
 
   // const remoteBaseUrl = '/freeboard/REMOTE';
 
@@ -219,3 +210,5 @@
     }
   });
 }());
+
+

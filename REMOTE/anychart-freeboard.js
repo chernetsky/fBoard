@@ -1,4 +1,97 @@
 if (!anychart['anychart-freeboard']) {
+  let dashboardInfo = {};
+
+  const getUserInfo = () => {
+    return new Promise((resolve, reject) => {
+      if (typeof dashboardInfo.dashboardId !== 'undefined') {
+        resolve(dashboardInfo);
+
+      } else {
+        let userInfo = {};
+        const startPromise = new Promise((resolve, reject) => resolve(true));
+
+        startPromise
+            .then(r => {
+              // Try to get dashboard id
+              const pathParts = window.location.pathname.split('/');
+              if (pathParts.length === 3 && pathParts[1] === 'board') {
+                userInfo.dashboardId = pathParts[2];
+                return userInfo;
+              } else
+                throw null;
+            })
+            .then(r => {
+              if (r)
+                return fetch("https://freeboard.io/account/settings");
+              else
+                throw userInfo;
+            })
+            .then(r => {
+              if (r.ok)
+                return r.text();
+              else
+                throw userInfo;
+            })
+            .then(data => {
+              if (data) {
+                const domElements = $.parseHTML(data);
+                const dataIds = ['data-user', 'data-billing'];
+                for (let i = 0; i < domElements.length; i++) {
+                  const $page = $(domElements[i]);
+                  if (domElements[i].className === 'page') {
+                    for (let j = 0; j < dataIds.length; j++) {
+                      const dataElement = $page.find('#' + dataIds[j])[0];
+                      if (dataElement) {
+                        let text = dataElement.text;
+                        userInfo = Object.assign(userInfo, JSON.parse(decodeURIComponent(text.replace(/(%2E)/ig, "%20"))));
+                      }
+                    }
+                    break;
+                  }
+                }
+              }
+              resolve(userInfo);
+            })
+            .catch(function(r) {
+              resolve(r);
+            });
+      }
+    });
+  };
+
+  // Check license
+  (() => {
+    getUserInfo()
+        .then((r) => {
+          console.log("Check license with", dashboardInfo);
+          if (r && r.dashboardId) {
+            dashboardInfo = r;
+
+            // todo: Сделать правильный url
+            const licenseUrl = 'https://anychart.com/license_server_url';
+
+            return fetch(licenseUrl);
+          } else
+            throw false;
+        })
+        .then(function(r) {
+          if (r.ok)
+            return r.json();
+          else
+            throw false;
+        })
+        .catch(function(r){
+          // todo: debug here
+          return {license: "valid", daysLeft: 90};
+          // return {license: "trial", daysLeft: 108};
+          // return {license: "expired", daysLeft: 0};
+          // return {license: "Not processed", daysLeft: 0};
+        })
+        .then(function(r) {
+          console.log("License server response", r);
+        });
+  })();
+
   anychart['anychart-freeboard'] = function(settings){
     const ac = window['anychart'];
     const self = this;
