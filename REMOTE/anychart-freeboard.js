@@ -97,7 +97,7 @@ if (!anychart['anychart-freeboard']) {
             } else {
               // If something wrong
               // todo: debug responses here
-              // return {license: "valid", daysLeft: 90};
+              return {license: "valid", daysLeft: 90};
               // Вызывыаем CE
               // Credits убираем
 
@@ -105,7 +105,7 @@ if (!anychart['anychart-freeboard']) {
               // Вызывыаем CE
               // Credits: Trial
 
-              return {license: "expired", daysLeft: 0};
+              // return {license: "expired", daysLeft: 0};
               // Модальное окно с поле для ввода кода
               // Credits: LICENSE EXPIRED
 
@@ -173,8 +173,7 @@ if (!anychart['anychart-freeboard']) {
       if (chart)
         chart.dispose();
 
-      ac['theme'](ac['themes'][currentSettings.theme]);
-      ac['appendTheme'](ac['themes']['freeboard']);
+      self.setupThemes();
 
       const codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
       if (codeSplit.length === 2) {
@@ -188,7 +187,7 @@ if (!anychart['anychart-freeboard']) {
 
         if (!chart) return null;
 
-        // todo: Это работает на чарте, но в эдитор нормально не пробросить.
+        // todo: Это работает на чарте, но в эдитор нормально не пробросить. Надо думать.
         // Add and configure default datetime scale
         // const dateTimeScale = ac['scales']['dateTime']();
         // dateTimeScale.ticks().count(5);
@@ -206,6 +205,8 @@ if (!anychart['anychart-freeboard']) {
 
     self.initEditor = function(opt_autoChart) {
       if (!editor) {
+        self.setupThemes();
+
         editor = ac['editor'](currentSettings.chart_type);
         editor.step('data', false);
         editor.step('chart', false);
@@ -327,6 +328,12 @@ if (!anychart['anychart-freeboard']) {
       if (previousSettings.chart_type !== newSettings.chart_type) {
         self.rebuildChart(true);
       }
+    };
+
+
+    self.setupThemes = function() {
+      ac['theme'](ac['themes'][currentSettings.theme]);
+      ac['appendTheme'](ac['themes']['freeboard']);
     };
 
 
