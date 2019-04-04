@@ -2,6 +2,11 @@ if (!anychart['anychart-freeboard']) {
   let licenseStatus = {checked: false};
   let dashboardInfo = {};
 
+  /**
+   * Get dashboard id and user info.
+   *
+   * @return {Promise}
+   */
   const getUserInfo = () => {
     return new Promise((resolve, reject) => {
       if (licenseStatus.checked || typeof dashboardInfo.dashboardId !== 'undefined') {
@@ -21,10 +26,8 @@ if (!anychart['anychart-freeboard']) {
                 throw {};
             })
             .then(r => {
-              if (r)
-                return fetch("https://freeboard.io/account/settings");
-              else
-                throw userInfo;
+              // Try to get user account page html
+              return fetch("https://freeboard.io/account/settings");
             })
             .then(r => {
               if (r.ok)
@@ -141,16 +144,6 @@ if (!anychart['anychart-freeboard']) {
     let editorOptions = {
       measuresCount: -1,
       complete: false
-    };
-
-
-    self.toolbarDialogShowHandler = function(evt) {
-      if (licenseStatus.license === 'valid' || licenseStatus.license === 'trial') {
-        evt.preventDefault();
-        self.openEditorDialog();
-        return false;
-      }
-      return true;
     };
 
 
@@ -334,6 +327,23 @@ if (!anychart['anychart-freeboard']) {
     self.setupThemes = function() {
       ac['theme'](ac['themes'][currentSettings.theme]);
       ac['appendTheme'](ac['themes']['freeboard']);
+    };
+
+
+    self.toolbarDialogShowHandler = function(evt) {
+      if (licenseStatus.license === 'valid' || licenseStatus.license === 'trial') {
+        /**
+         * License checked and license status is good enough to open editor
+         */
+        evt.preventDefault();
+        self.openEditorDialog();
+        return false;
+      }
+
+      /**
+       * License status is not good - open license info dialog
+       */
+      return true;
     };
 
 
