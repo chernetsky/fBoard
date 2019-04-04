@@ -9,22 +9,20 @@
   })();
 
   /**
-   * data-user
+   * Чтобы добавить в дашборд на freeboard.io надо:
+   * 1. Зайти на дашборде в developers console
+   * 2. Нажать Add и добавить такую ссылку: https://static.anychart.com/demos/freeboard20/acV2.js
    *
-   * %7B%22_id%22%3A%225ca3275eed6bba140a000143%22%2C%22username%22%3A%22cherwekopff%22%2C%22email%22%3A%22info@cherveferma.ru%22%7D
+   * Основной скрипт (acV2.js) обновляем на статике тут: demos/freeboard20/
+   *
+   * Remote скрипты лежат там же рядом в папке demos/freeboard20/REMOTE
    */
+  const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
 
   /**
-   * data-billing
-   * %7B%22planID%22%3A%22free%22%2C%22haveCreditCard%22%3Afalse%7D
+   * Это раскомментировать для локальной разработки
    */
-
-  // freeboard.on('dashboard_loaded', getUserInfo);
-  // freeboard.on('initialized', getUserInfo);
-  // const remoteBaseUrl = '/freeboard/REMOTE';
-
-  // https://static.anychart.com/demos/freeboard20/acV2.js
-  const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
+  // const remoteBaseUrl = '/fBoard/REMOTE';
 
   freeboard.loadWidgetPlugin({
     type_name: 'anychart_freeboard_plugin',
