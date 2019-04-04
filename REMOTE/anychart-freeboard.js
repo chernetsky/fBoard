@@ -114,10 +114,8 @@ if (!anychart['anychart-freeboard']) {
               // Модальное окно с поле для ввода кода
               // Credits: Trial
 
-              // return {license: "Not processed", daysLeft: 0};
-              // Ошибка сервера и т.п.
-              // Модальное окно с поле для ввода кода
-              // Credits: Trial
+              // todo: Должно остаться только это - вариант ответа, если сервер сломался
+              return {license: "trial", daysLeft: 1};
             }
           })
           .then(function(r) {
@@ -125,6 +123,7 @@ if (!anychart['anychart-freeboard']) {
             licenseStatus = r;
             licenseStatus.checked = true;
             self.rebuildChart();
+            toolbar.licenseStatus(licenseStatus);
           });
     }
 
@@ -146,10 +145,7 @@ if (!anychart['anychart-freeboard']) {
 
 
     self.toolbarDialogShowHandler = function(evt) {
-      // todo: Check license
-      const licenseStatus = true;
-
-      if (licenseStatus) {
+      if (licenseStatus.license === 'valid' || licenseStatus.license === 'trial') {
         evt.preventDefault();
         self.openEditorDialog();
         return false;
@@ -192,10 +188,11 @@ if (!anychart['anychart-freeboard']) {
 
         if (!chart) return null;
 
+        // todo: Это работает на чарте, но в эдитор нормально не пробросить.
         // Add and configure default datetime scale
-        const dateTimeScale = ac['scales']['dateTime']();
-        dateTimeScale.ticks().count(5);
-        chart['xScale'](dateTimeScale);
+        // const dateTimeScale = ac['scales']['dateTime']();
+        // dateTimeScale.ticks().count(5);
+        // chart['xScale'](dateTimeScale);
 
         // Invoke second part of code: pass data and apply chart appearance settings
         const code2func = eval(code2);
@@ -225,7 +222,7 @@ if (!anychart['anychart-freeboard']) {
     self.saveEditorState = function(opt_doNotSave) {
       if (!opt_doNotSave) {
         let overrides = [];
-        freeboard.addStyle(".anychart-credits-text", "color:black;");
+        freeboard.addStyle(".anychart-credits-text", "color:#929292;");
         switch (licenseStatus.license) {
           case 'valid':
             overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': false});

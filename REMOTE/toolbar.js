@@ -21,6 +21,17 @@ class AcToolbar extends EventTarget {
      * @type {Object}
      */
     this.options = opt_options || {};
+
+    /**
+     *
+     * @type {Object}
+     */
+    this.licenseStatus_ = {};
+  }
+
+
+  licenseStatus(value) {
+    this.licenseStatus_ = value;
   }
 
 
@@ -61,7 +72,14 @@ class AcToolbar extends EventTarget {
    * @return {!DialogBox}
    */
   getDialog() {
-    const content = $('<h2>Anychart License Text Title</h2>' +
+    let content = '';
+    // switch (this.licenseStatus_.license) {
+    //   case 'expired':
+    //     break;
+    //   case 'invalid':
+    //     break;
+    // }
+    content = $('<p>License: <b>' + this.licenseStatus_.license + '</b></p>' +
         '<p><a href="http://anychart.com" target="_blank">Lorem Ipsum is simply dummy text</a> of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>' +
         '<p>It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>')
 
