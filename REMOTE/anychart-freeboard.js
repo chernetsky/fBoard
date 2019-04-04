@@ -262,7 +262,7 @@ if (!anychart['anychart-freeboard']) {
     self.openEditorDialog = function() {
       self.initEditor();
 
-      editor['dialogRender']();
+      editor['dialogRender']('anychart-ce-freeboard-dialog');
       editor['dialogVisible'](true);
 
       editorOptions.complete = false;
