@@ -17,13 +17,24 @@ if (!anychart['anychart-freeboard']) {
         const startPromise = new Promise((resolve, reject) => resolve(true));
         startPromise
             .then(r => {
-              // Try to get dashboard id
-              const pathParts = window.location.pathname.split('/');
-              if (pathParts.length === 3 && pathParts[1] === 'board') {
-                userInfo.dashboardId = pathParts[2];
+              // Try to get dashboard info from #data-board element
+              const dataBoardElement = $('#data-board')[0];
+              if (dataBoardElement) {
+                let text = dataBoardElement.text;
+                userInfo = Object.assign(userInfo, JSON.parse(decodeURIComponent(text.replace(/(%2E)/ig, "%20"))));
                 return userInfo;
-              } else
+              } else {
+                // localhost
                 throw {};
+              }
+
+              // Try to get dashboard id from url (old style)
+              // const pathParts = window.location.pathname.split('/');
+              // if (pathParts.length === 3 && pathParts[1] === 'board') {
+              //   userInfo.dashboardId = pathParts[2];
+              //   return userInfo;
+              // } else
+              //   throw {};
             })
             .then(r => {
               // Try to get user account page html
