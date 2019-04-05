@@ -76,6 +76,8 @@ if (!anychart['anychart-freeboard']) {
             } else if (r || r.dashboardId) {
               dashboardInfo = r;
 
+              console.log("User data", r);
+
               // todo: Сделать правильный url
               const licenseUrl = 'https://anychart.com/license_server_url';
               return fetch(licenseUrl);
