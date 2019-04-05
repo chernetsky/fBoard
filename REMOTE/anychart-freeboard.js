@@ -38,7 +38,7 @@ if (!anychart['anychart-freeboard']) {
             .then(data => {
               if (data) {
                 const domElements = $.parseHTML(data);
-                const dataIds = ['data-user', 'data-billing'];
+                const dataIds = ['data-user', 'data-billing', 'data-account'];
                 for (let i = 0; i < domElements.length; i++) {
                   const $page = $(domElements[i]);
                   if (domElements[i].className === 'page') {
