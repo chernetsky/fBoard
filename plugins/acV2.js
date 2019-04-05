@@ -5,9 +5,27 @@
   (function() {
     freeboard.addStyle("#setting-row-chart_code", "display:none");
     freeboard.addStyle("#setting-row-editor_model", "display:none");
-    freeboard.addStyle("#setting-row-widget_id", "display:none");
+    freeboard.addStyle("#setting-row-customized", "display:none");
   })();
 
+  /**
+   * Чтобы добавить в дашборд на freeboard.io надо:
+   * 1. Зайти на дашборде в developers console
+   * 2. Нажать Add и добавить такую ссылку: https://static.anychart.com/demos/freeboard20/acV2.js
+   *
+   * Основной скрипт (acV2.js) обновляем на статике тут: demos/freeboard20/
+   *
+   * Remote скрипты лежат там же рядом в папке demos/freeboard20/REMOTE
+   */
+  /**
+   * Это раскомментировать для тестирования на реальном дашборде
+   */
+  //const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
+
+  /**
+   * Это раскомментировать для локальной разработки
+   */
+  const remoteBaseUrl = '/fBoard/REMOTE';
 
   freeboard.loadWidgetPlugin({
     type_name: 'anychart_freeboard_plugin',
@@ -16,10 +34,13 @@
     external_scripts: [
       'https://cdn.anychart.com/releases/8.5.0/js/anychart-bundle.min.js',
       'https://cdn.anychart.com/releases/8.5.0/fonts/css/anychart-font.min.css',
-      '/fBoard/REMOTE/anychart-editor.min.js',
-      '/fBoard/REMOTE/anychart-editor.min.css',
-      '/fBoard/REMOTE/anychart-freeboard.js',
-      '/fBoard/REMOTE/themes-combined.js'
+
+      remoteBaseUrl + '/lib/anychart-editor.min.js',
+      remoteBaseUrl + '/lib/anychart-editor.min.css',
+
+      remoteBaseUrl + '/anychart-freeboard.js',
+      remoteBaseUrl + '/themes-combined.js',
+      remoteBaseUrl + '/toolbar.js'
     ],
 
     fill_size: true,
@@ -85,13 +106,6 @@
           }
         ]
       },
-      // {
-      //   name: 'run_editor',
-      //   display_name: 'Run editor',
-      //   type: 'boolean',
-      //   default_value: false,
-      //   description: 'Run chart editor after close this dialog'
-      // },
       {
         name: 'theme',
         display_name: 'Select theme',
@@ -182,8 +196,9 @@
         description: "This field is for widget's internal using purpose"
       },
       {
-        name: 'widget_id',
-        type: 'text',
+        name: 'customized',
+        type: 'number',
+        default_value: 0,
         description: "This field is for widget's internal using purpose"
       }
     ],
@@ -193,3 +208,5 @@
     }
   });
 }());
+
+

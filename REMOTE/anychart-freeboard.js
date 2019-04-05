@@ -1,54 +1,165 @@
 if (!anychart['anychart-freeboard']) {
+  let licenseStatus = {checked: false};
+  let dashboardInfo = {};
+
   /**
-   * Global anychart object
+   * Get dashboard id and user info.
+   *
+   * @return {Promise}
    */
-  var ac;
+  const getUserInfo = () => {
+    return new Promise((resolve, reject) => {
+      if (licenseStatus.checked || typeof dashboardInfo.dashboardId !== 'undefined') {
+        resolve(dashboardInfo);
+
+      } else {
+        let userInfo = {};
+        const startPromise = new Promise((resolve, reject) => resolve(true));
+        startPromise
+            .then(r => {
+              // Try to get dashboard id
+              const pathParts = window.location.pathname.split('/');
+              if (pathParts.length === 3 && pathParts[1] === 'board') {
+                userInfo.dashboardId = pathParts[2];
+                return userInfo;
+              } else
+                throw {};
+            })
+            .then(r => {
+              // Try to get user account page html
+              return fetch("https://freeboard.io/account/settings");
+            })
+            .then(r => {
+              if (r.ok)
+                return r.text();
+              else
+                throw userInfo;
+            })
+            .then(data => {
+              if (data) {
+                const domElements = $.parseHTML(data);
+                const dataIds = ['data-user', 'data-billing'];
+                for (let i = 0; i < domElements.length; i++) {
+                  const $page = $(domElements[i]);
+                  if (domElements[i].className === 'page') {
+                    for (let j = 0; j < dataIds.length; j++) {
+                      const dataElement = $page.find('#' + dataIds[j])[0];
+                      if (dataElement) {
+                        let text = dataElement.text;
+                        userInfo = Object.assign(userInfo, JSON.parse(decodeURIComponent(text.replace(/(%2E)/ig, "%20"))));
+                      }
+                    }
+                    break;
+                  }
+                }
+              }
+              resolve(userInfo);
+            })
+            .catch(function(r) {
+              resolve(r);
+            });
+      }
+    });
+  };
 
   anychart['anychart-freeboard'] = function(settings){
-    var ac = anychart;
-    var self = this;
+    const self = this;
 
-    var currentSettings = settings;
-    var container;
+    // Check license
+    if (!licenseStatus.checked) {
+      getUserInfo()
+          .then((r) => {
+            if (licenseStatus.checked) {
+              // Already checked in another instance
+              throw true;
 
-    var chart;
-    var dataSet = ac.data.set();
-    var acSettings;
+            } else if (r || r.dashboardId) {
+              dashboardInfo = r;
 
-    var editor;
-    var editorOptions = {
-      complete: false,
-      measuresCount: -1
+              console.log("User data", r);
+
+              // todo: Сделать правильный url
+              const licenseUrl = 'https://anychart.com/license_server_url';
+              return fetch(licenseUrl);
+
+            } else {
+              // User info is invalid
+              throw false;
+            }
+          })
+          .then(function(r) {
+            if (r.ok)
+              return r.json();
+            else {
+              // Server error
+              throw false;
+            }
+          })
+          .catch(function(r) {
+            if (r === true) {
+              // License already checked
+              return licenseStatus;
+            } else {
+              // If something wrong
+              // todo: debug responses here
+              return {license: "valid", daysLeft: 90};
+              // Вызывыаем CE
+              // Credits убираем
+
+              // return {license: "trial", daysLeft: 108};
+              // Вызывыаем CE
+              // Credits: Trial
+
+              // return {license: "expired", daysLeft: 0};
+              // Модальное окно с поле для ввода кода
+              // Credits: LICENSE EXPIRED
+
+              // return {license: "invalid", daysLeft: 0};
+              // Не совпадают тарифные планы
+              // Модальное окно с поле для ввода кода
+              // Credits: Trial
+
+              // todo: Должно остаться только это - вариант ответа, если сервер сломался
+              return {license: "trial", daysLeft: 1};
+            }
+          })
+          .then(function(r) {
+            console.log("Response", r);
+            licenseStatus = r;
+            licenseStatus.checked = true;
+            self.rebuildChart();
+            toolbar.licenseStatus(licenseStatus);
+          });
+    }
+
+    const ac = window['anychart'];
+    ac['licenseKey']('qlik3-dbf550c-dca27a7');
+
+    let currentSettings = settings;
+    let container;
+
+    const dataSet = ac.data.set();
+    let chart;
+    let toolbar;
+
+    let editor;
+    let editorOptions = {
+      measuresCount: -1,
+      complete: false
     };
 
-    self.acWrapToolsHandler = function(e) {
-      console.log(e.acMessage);
-    };
-
-    self.acDialogShowHandler = function(e) {
-      console.log(e.acMessage);
-    };
-
-    self.acSettingsApply = function(e) {
-      console.log(e.acMessage);
-    };
-
-    self.initAnychartSettings = function(element) {
-      if (!acSettings) {
-        acSettings = new AnychartSettings(element);
-        acSettings.addEventListener(AnychartSettings.EventType.AC_WRAP_TOOLS, self.acWrapToolsHandler);
-        acSettings.addEventListener(AnychartSettings.EventType.AC_DIALOG_SHOW, self.acDialogShowHandler);
-        acSettings.addEventListener(AnychartSettings.EventType.AC_SETTINGS_APPLY, self.acSettingsApply);
-        acSettings.wrapFreeboardTools();
-      }
-    };
 
     self.render = function(element) {
-      self.initAnychartSettings(element);
+      if (!toolbar) {
+        toolbar = new AcToolbar(element);
+        toolbar.wrapFreeboardTools();
+        toolbar.addEventListener(AcToolbar.EventType.AC_DIALOG_SHOW, self.toolbarDialogShowHandler);
+      }
 
       container = element;
       self.drawChart();
     };
+
 
     self.drawChart = function() {
       if (!currentSettings.chart_code)
@@ -57,88 +168,120 @@ if (!anychart['anychart-freeboard']) {
       if (chart)
         chart.dispose();
 
-      anychart.theme(anychart.themes[currentSettings.theme]);
-      anychart.appendTheme(anychart.themes.freeboard);
+      self.setupThemes();
 
-      var codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
+      const codeSplit = currentSettings.chart_code.split(/\/\*=rawData.+rawData=\*\//);
       if (codeSplit.length === 2) {
         // Chart creation code part
-        var code1 = '(function(){' + codeSplit[0] + 'return chart;})();';
+        const code1 = '(function(){' + codeSplit[0] + 'return chart;})();';
         // Data apply and chart settings code part
-        var code2 = '(function(){ return function(chart, dataSet){' + codeSplit[1] + '}})();';
+        const code2 = '(function(){ return function(chart, dataSet){' + codeSplit[1] + '}})();';
 
         // Create chart instance
         chart = eval(code1);
-        window['chartInstance'] = chart;
 
         if (!chart) return null;
 
+        // todo: Это работает на чарте, но в эдитор нормально не пробросить. Надо думать.
+        // Add and configure default datetime scale
+        // const dateTimeScale = ac['scales']['dateTime']();
+        // dateTimeScale.ticks().count(5);
+        // chart['xScale'](dateTimeScale);
+
         // Invoke second part of code: pass data and apply chart appearance settings
-        var code2func = eval(code2);
+        const code2func = eval(code2);
         code2func.apply(null, [chart, dataSet]);
 
-        chart['background']('grey'); //TODO (A.Kudryavtsev): Remove.
         chart['container'](container);
         chart['draw']();
       }
     };
 
-    self.initEditor = function(opt_dropOldChart) {
+
+    self.initEditor = function(opt_autoChart) {
       if (!editor) {
+        self.setupThemes();
+
         editor = ac['editor'](currentSettings.chart_type);
         editor.step('data', false);
         editor.step('chart', false);
         editor.step('export', false);
         editor.data({data: dataSet});
 
-        if (!opt_dropOldChart && currentSettings.editor_model)
-          editor.deserializeModel(currentSettings.editor_model);
+        if (!opt_autoChart && currentSettings.editor_model) {
+          editor['deserializeModel'](currentSettings.editor_model);
+        }
       }
     };
 
-    self.saveEditorState = function(opt_saveCode) {
-      if (opt_saveCode) {
+
+    self.saveEditorState = function(opt_doNotSave) {
+      if (!opt_doNotSave) {
+        let overrides = [];
+        freeboard.addStyle(".anychart-credits-text", "color:#929292;");
+        switch (licenseStatus.license) {
+          case 'valid':
+            overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': false});
+            break;
+          case 'expired':
+            overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'ANYCHART EXPIRED LICENSE'});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-expired'});
+            freeboard.addStyle(".anychart-credits-text", "color:red;");
+            break;
+          default: {
+            // trial, invalid, Not processed
+            overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'AnyChart Trial Version'});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-trial'});
+          }
+        }
+
         currentSettings.chart_code = editor['getJavascript']({
           'minify': true,
           'addData': false,
           'addMarkers': true,
           'wrapper': '',
           'container': ''
-        });
+        }, overrides);
         currentSettings.editor_model = editor['serializeModel']();
 
-        var dataRow = dataSet.row(0);
-        editorOptions.measuresCount = dataRow.length;
+        self.render(container);
       }
+
       editor['removeAllListeners']();
       editor['dispose']();
       editor = null;
     };
 
-    self.rebuildChart = function(opt_dropOldChart) {
-      self.initEditor(opt_dropOldChart);
-      self.saveEditorState(true);
-      self.render(container);
+
+    self.rebuildChart = function(opt_autoChart) {
+      self.initEditor(opt_autoChart);
+      self.saveEditorState();
     };
+
 
     self.openEditorDialog = function() {
       self.initEditor();
 
-      editor['dialogRender']();
+      editor['dialogRender']('anychart-ce-freeboard-dialog');
       editor['dialogVisible'](true);
 
-      currentSettings.complete = false;
+      editorOptions.complete = false;
       editor['listenOnce']('editorComplete', function() {
-        self.saveEditorState(true, true);
-        currentSettings.complete = true;
+        editorOptions.complete = true;
+        currentSettings.customized = 1;
         editor['dialogVisible'](false, true);
+
+        self.saveEditorState();
       });
 
       editor['listenOnce']('editorClose', function(evt) {
-        if (!currentSettings.complete && evt.target == editor)
-          self.saveEditorState();
+        if (!editorOptions.complete && evt.target === editor)
+          self.saveEditorState(true);
       });
     };
+
 
     self.onCalculatedValueChanged = function(settingName, newValue) {
       switch (settingName) {
@@ -146,10 +289,11 @@ if (!anychart['anychart-freeboard']) {
           dataSet.append(newValue);
           if (dataSet.getRowsCount() > currentSettings.max_points)
             dataSet.remove(0);
-var measuresCount = newValue.length;
-          if (editorOptions.measuresCount !== measuresCount){
-              self.rebuildChart(true);
-              editorOptions.measuresCount = measuresCount;
+
+          const measuresCount = newValue.length;
+          if (!currentSettings.customized && editorOptions.measuresCount !== measuresCount) {
+            self.rebuildChart(true);
+            editorOptions.measuresCount = measuresCount;
           }
           break;
         }
@@ -159,27 +303,21 @@ var measuresCount = newValue.length;
         self.render(container);
     };
 
+
     self.onSettingsChanged = function(newSettings) {
-      var previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
+      const previousSettings = typeof currentSettings === 'object' ? Object.assign(currentSettings) : currentSettings;
       currentSettings = newSettings;
-
-      if (previousSettings.theme !== currentSettings.theme) {
-        anychart.theme(anychart.themes[currentSettings.theme]);
-        anychart.appendTheme(anychart.themes.freeboard);
-      }
-
-      if (newSettings.run_editor && freeboard.isEditing()) {
-        editorOptions.run = true;
-      } else {
-        self.drawChart();
-      }
 
       if (previousSettings.max_points !== newSettings.max_points) {
         newSettings.max_points = newSettings.max_points > 0 ? newSettings.max_points : previousSettings.max_points;
-        var rowsToRemove = dataSet.getRowsCount() - newSettings.max_points;
+        let rowsToRemove = dataSet['getRowsCount']() - newSettings.max_points;
         for (; rowsToRemove > 0; rowsToRemove--) {
           dataSet.remove(0);
         }
+      }
+
+      if (previousSettings.theme !== newSettings.theme) {
+        self.render(container);
       }
 
       if (previousSettings.chart_type !== newSettings.chart_type) {
@@ -187,17 +325,41 @@ var measuresCount = newValue.length;
       }
     };
 
+
+    self.setupThemes = function() {
+      ac['theme'](ac['themes'][currentSettings.theme]);
+      ac['appendTheme'](ac['themes']['freeboard']);
+    };
+
+
+    self.toolbarDialogShowHandler = function(evt) {
+      if (licenseStatus.license === 'valid' || licenseStatus.license === 'trial') {
+        /**
+         * License checked and license status is good enough to open editor
+         */
+        evt.preventDefault();
+        self.openEditorDialog();
+        return false;
+      }
+
+      /**
+       * License status is not good - open license info dialog
+       */
+      return true;
+    };
+
+
     self.getHeight = function() {
-      var size = Number(currentSettings.size);
+      const size = Number(currentSettings.size);
       return !isNaN(size) ? size : 2;
     };
 
+
     self.onDispose = function() {
-      if (acSettings) {
-        acSettings.removeEventListener(AnychartSettings.EventType.AC_WRAP_TOOLS, self.acWrapToolsHandler);
-        acSettings.removeEventListener(AnychartSettings.EventType.AC_DIALOG_SHOW, self.acDialogShowHandler);
-        acSettings.dispose();
+      if (toolbar) {
+        toolbar.dispose();
       }
+
       if (chart) {
         chart.dispose();
         dataSet.dispose();
