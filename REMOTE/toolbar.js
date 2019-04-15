@@ -79,9 +79,71 @@ class AcToolbar extends EventTarget {
     //   case 'invalid':
     //     break;
     // }
-    content = $('<p>License: <b>' + this.licenseStatus_.license + '</b></p>' +
-        '<p><a href="http://anychart.com" target="_blank">Lorem Ipsum is simply dummy text</a> of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>' +
-        '<p>It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>')
+    let contentHtml = '<p>License status: <b>' + this.licenseStatus_.license + '</b></p>';
+    if (this.licenseStatus_.message) {
+      contentHtml += '<p>Message: ' + this.licenseStatus_.message + '</p>';
+    }
+
+    contentHtml += `
+<b id="about-message">&nbsp;</b>
+<form id="activation">
+    <input id="code" class="acqlik-input" maxlength="32" placeholder="Paste your activation code">
+    <div class="acqlik-buttons">
+        <button id="activate" name="activate" type="submit" class="acqlik-btn primary">Activate</button>
+        <a id="buy" class="acqlik-btn warning" target="_blank" href="https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-buy">Buy</a>
+    </div>
+</form>
+<script>
+  const form = document.forms[0];
+  const input = form.code;
+  
+  input.addEventListener('input', function() {
+    document.getElementById('about-message').innerText = '&nbsp;';
+  });
+  
+  form.addEventListener('submit', sendCode);
+
+function sendCode(e) {
+  function showError(txt){
+    document.getElementById('about-message').style.display = "block";
+    document.getElementById('about-message').classList.remove('success');
+    document.getElementById('about-message').classList.add('error');
+    document.getElementById('about-message').innerText = txt;
+  }
+
+  e.preventDefault();
+  
+  const code = input.value;
+  if (code.length === 32) {
+    const key = document.getElementById('key-value').innerText;
+    const body = 'downloadKey=' + key + '&activationCode=' + code + '&chartType={{chartType}}';
+    fetch('https://www.anychart.com/licenses-checker/fblink', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      body: body
+    }).then(r => r.json()).then(r => {
+      if (r.message.indexOf("can't find") !== -1) {
+         showError('Activation failed. Please contact support.');
+      }else if (r.message.indexOf("code missing") !== -1) {
+        showError('Activation code missing.');
+      }else if (r.message.indexOf("successful") !== -1) {
+        document.forms[0].style.display = 'none';
+        document.getElementById('about-message').style.display = "block";
+        document.getElementById('about-message').classList.remove('error');
+        document.getElementById('about-message').classList.add('success');
+        document.getElementById('about-message').innerText = 'Activation successful. Please reload your page (press Shift+F5).';
+      }
+    });
+  } else {
+      showError('Invalid activation code length');
+  }
+}
+</script>
+`;
+
+    content = $(contentHtml);
 
     return new DialogBox(content, "Anychart License Dialog Title", "Ok", null, this.getDialogOkCallback());
   }

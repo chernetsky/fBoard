@@ -87,10 +87,30 @@ if (!anychart['anychart-freeboard']) {
             } else if (r || r.dashboardId) {
               dashboardInfo = r;
 
-              console.log("User data", r);
+              const allowedFields = ['email', 'username', 'phone', 'company', 'zip', 'planID', 'canEdit', 'id'];
 
-              // todo: Сделать правильный url
-              const licenseUrl = 'https://anychart.com/license_server_url';
+              // console.log("Raw user info", r);
+              const queryData = Object.keys(r)
+                  .filter(key => allowedFields.includes(key))
+                  .reduce((obj, key) => {
+                    return {
+                      ...obj,
+                      [key]: r[key]
+                    };
+                  }, {});
+
+              queryData['hashId'] = r['_id'];
+              queryData['firstName'] = r['name'] && r['name']['first'] || null;
+              queryData['middleName'] = r['name'] && r['name']['middle'] || null;
+              queryData['lastName'] = r['name'] && r['name']['last'] || null;
+
+              console.log("User data", queryData);
+
+              let licenseUrl = 'https://www.anychart.com/licenses-checker/fblicense';
+              licenseUrl += '?' + $.param(queryData);
+
+              //console.log(licenseUrl);
+
               return fetch(licenseUrl);
 
             } else {
@@ -111,31 +131,30 @@ if (!anychart['anychart-freeboard']) {
               // License already checked
               return licenseStatus;
             } else {
-              // If something wrong
-              // todo: debug responses here
-              return {license: "valid", daysLeft: 90};
-              // Вызывыаем CE
-              // Credits убираем
-
-              // return {license: "trial", daysLeft: 108};
-              // Вызывыаем CE
-              // Credits: Trial
-
-              // return {license: "expired", daysLeft: 0};
-              // Модальное окно с поле для ввода кода
-              // Credits: LICENSE EXPIRED
-
-              // return {license: "invalid", daysLeft: 0};
-              // Не совпадают тарифные планы
-              // Модальное окно с поле для ввода кода
-              // Credits: Trial
-
-              // todo: Должно остаться только это - вариант ответа, если сервер сломался
+              // If something wrong with server
               return {license: "trial", daysLeft: 1};
             }
           })
           .then(function(r) {
-            console.log("Response", r);
+            // todo: debug responses here
+            // r = {license: "valid", daysLeft: 99};
+            // Вызывыаем CE
+            // Credits убираем
+
+            // r = {license: "trial", daysLeft: 108};
+            // Вызывыаем CE
+            // Credits: Trial
+
+            r = {license: "expired", daysLeft: 0};
+            // Модальное окно с поле для ввода кода
+            // Credits: LICENSE EXPIRED
+
+            // r = {license: "invalid", daysLeft: 0};
+            // Не совпадают тарифные планы
+            // Модальное окно с поле для ввода кода
+            // Credits: Trial
+            console.log("License", r);
+
             licenseStatus = r;
             licenseStatus.checked = true;
             self.rebuildChart();
