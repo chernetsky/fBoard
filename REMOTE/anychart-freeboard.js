@@ -1,6 +1,6 @@
 if (!anychart['anychart-freeboard']) {
   let licenseStatus = {checked: false};
-  let dashboardInfo = {};
+  let userInfo = {};
 
   /**
    * Get dashboard id and user info.
@@ -9,8 +9,8 @@ if (!anychart['anychart-freeboard']) {
    */
   const getUserInfo = () => {
     return new Promise((resolve, reject) => {
-      if (licenseStatus.checked || typeof dashboardInfo.dashboardId !== 'undefined') {
-        resolve(dashboardInfo);
+      if (licenseStatus.checked || typeof userInfo.dashboardId !== 'undefined') {
+        resolve(userInfo);
 
       } else {
         let userInfo = {};
@@ -85,7 +85,7 @@ if (!anychart['anychart-freeboard']) {
               throw true;
 
             } else if (r || r.dashboardId) {
-              dashboardInfo = r;
+              userInfo = r;
 
               const allowedFields = ['email', 'username', 'phone', 'company', 'zip', 'planID', 'canEdit', 'id'];
 
@@ -158,7 +158,7 @@ if (!anychart['anychart-freeboard']) {
             licenseStatus = r;
             licenseStatus.checked = true;
             self.rebuildChart();
-            toolbar.licenseStatus(licenseStatus);
+            toolbar.setStatus(userInfo.dashboardId, licenseStatus);
           });
     }
 

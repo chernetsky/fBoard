@@ -23,6 +23,12 @@ class AcToolbar extends EventTarget {
     this.options = opt_options || {};
 
     /**
+     * @type {?string}
+     * @private
+     */
+    this.dashboardId_ = null;
+
+    /**
      *
      * @type {Object}
      */
@@ -30,8 +36,9 @@ class AcToolbar extends EventTarget {
   }
 
 
-  licenseStatus(value) {
-    this.licenseStatus_ = value;
+  setStatus(dashboardId, licenseStatus) {
+    this.dashboardId_ = dashboardId;
+    this.licenseStatus_ = licenseStatus;
   }
 
 
@@ -85,59 +92,62 @@ class AcToolbar extends EventTarget {
     }
 
     contentHtml += `
-<b id="about-message">&nbsp;</b>
-<form id="activation">
-    <input id="code" class="acqlik-input" maxlength="32" placeholder="Paste your activation code">
-    <div class="acqlik-buttons">
-        <button id="activate" name="activate" type="submit" class="acqlik-btn primary">Activate</button>
-        <a id="buy" class="acqlik-btn warning" target="_blank" href="https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-buy">Buy</a>
+<div id="about-message"><span class="text"></span></div>
+<form id="ac-activation-form">
+    <input id="code" class="ac-input" maxlength="32" placeholder="Paste your activation code">
+    <div class="ac-buttons">
+        <button id="activate" name="activate" type="submit" class="ac-btn primary">Activate</button>
+        <a id="buy" class="ac-btn warning" target="_blank" href="https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-buy">Buy</a>
     </div>
 </form>
 <script>
-  const form = document.forms[0];
+  const form = document.querySelector('#ac-activation-form');
   const input = form.code;
+  const about = document.getElementById('about-message');
+  window['about'] = about;
   
+  function setMessage(txt, error = false) {
+    about.classList.remove(error ? 'success' : 'error');
+    about.classList.add(error ? 'error' : 'success');
+    about.children[0].innerText = txt;
+  }
+
   input.addEventListener('input', function() {
-    document.getElementById('about-message').innerText = '&nbsp;';
+    setMessage('');
   });
   
   form.addEventListener('submit', sendCode);
 
-function sendCode(e) {
-  function showError(txt){
-    document.getElementById('about-message').style.display = "block";
-    document.getElementById('about-message').classList.remove('success');
-    document.getElementById('about-message').classList.add('error');
-    document.getElementById('about-message').innerText = txt;
-  }
 
-  e.preventDefault();
+function sendCode(e) {
+   e.preventDefault();
   
   const code = input.value;
   if (code.length === 32) {
-    const key = document.getElementById('key-value').innerText;
-    const body = 'downloadKey=' + key + '&activationCode=' + code + '&chartType={{chartType}}';
+    const requestBody = 'dashboardId=${this.dashboardId_}&activationCode=' + code;
+    console.log(requestBody);
     fetch('https://www.anychart.com/licenses-checker/fblink', {
       method: 'POST',
       headers: {
         'content-type': 'application/x-www-form-urlencoded'
       },
-      body: body
-    }).then(r => r.json()).then(r => {
+      body: requestBody
+    })
+    .then(r => r.json())
+    .then(r => {
       if (r.message.indexOf("can't find") !== -1) {
-         showError('Activation failed. Please contact support.');
+         setMessage('Activation failed. Please contact support.', true);
+         
       }else if (r.message.indexOf("code missing") !== -1) {
-        showError('Activation code missing.');
+        setMessage('Activation code missing.', true);
+        
       }else if (r.message.indexOf("successful") !== -1) {
-        document.forms[0].style.display = 'none';
-        document.getElementById('about-message').style.display = "block";
-        document.getElementById('about-message').classList.remove('error');
-        document.getElementById('about-message').classList.add('success');
-        document.getElementById('about-message').innerText = 'Activation successful. Please reload your page (press Shift+F5).';
+        setMessage('Activation successful!', false);
       }
     });
+    
   } else {
-      showError('Invalid activation code length');
+      setMessage('Invalid activation code length', true);
   }
 }
 </script>
@@ -145,7 +155,7 @@ function sendCode(e) {
 
     content = $(contentHtml);
 
-    return new DialogBox(content, "Anychart License Dialog Title", "Ok", null, this.getDialogOkCallback());
+    return new DialogBox(content, "Anychart License", "Ok", null, this.getDialogOkCallback());
   }
 
   /**

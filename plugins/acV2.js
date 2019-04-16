@@ -39,6 +39,7 @@
       remoteBaseUrl + '/lib/anychart-editor.min.css',
 
       remoteBaseUrl + '/anychart-freeboard.js',
+      remoteBaseUrl + '/anychart-freeboard.css',
       remoteBaseUrl + '/themes-combined.js',
       remoteBaseUrl + '/toolbar.js'
     ],
