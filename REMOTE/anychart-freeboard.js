@@ -9,7 +9,7 @@ if (!anychart['anychart-freeboard']) {
    */
   const getUserInfo = () => {
     return new Promise((resolve, reject) => {
-      if (licenseStatus.checked || typeof userInfo.dashboardId !== 'undefined') {
+      if (licenseStatus.checked || typeof userInfo.id !== 'undefined') {
         resolve(userInfo);
 
       } else {
@@ -84,7 +84,7 @@ if (!anychart['anychart-freeboard']) {
               // Already checked in another instance
               throw true;
 
-            } else if (r || r.dashboardId) {
+            } else if (r && r.id) {
               userInfo = r;
 
               const allowedFields = ['email', 'username', 'phone', 'company', 'zip', 'planID', 'canEdit', 'id'];
@@ -104,7 +104,7 @@ if (!anychart['anychart-freeboard']) {
               queryData['middleName'] = r['name'] && r['name']['middle'] || null;
               queryData['lastName'] = r['name'] && r['name']['last'] || null;
 
-              console.log("User data", queryData);
+              // console.log("User data", queryData);
 
               let licenseUrl = 'https://www.anychart.com/licenses-checker/fblicense';
               licenseUrl += '?' + $.param(queryData);
@@ -138,14 +138,14 @@ if (!anychart['anychart-freeboard']) {
           .then(function(r) {
             // todo: debug responses here
             // r = {license: "valid", daysLeft: 99};
-            // Вызывыаем CE
-            // Credits убираем
+            // Доступен CE
+            // Credits отсутствуют
 
             // r = {license: "trial", daysLeft: 108};
-            // Вызывыаем CE
+            // Доступен CE
             // Credits: Trial
 
-            r = {license: "expired", daysLeft: 0};
+            // r = {license: "expired", daysLeft: 0};
             // Модальное окно с поле для ввода кода
             // Credits: LICENSE EXPIRED
 
@@ -153,12 +153,14 @@ if (!anychart['anychart-freeboard']) {
             // Не совпадают тарифные планы
             // Модальное окно с поле для ввода кода
             // Credits: Trial
-            console.log("License", r);
+
+            // console.log("License", r);
 
             licenseStatus = r;
             licenseStatus.checked = true;
             self.rebuildChart();
-            toolbar.setStatus(userInfo.dashboardId, licenseStatus);
+
+            toolbar.setStatus(userInfo.id, licenseStatus);
           });
     }
 

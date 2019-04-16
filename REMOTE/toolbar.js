@@ -91,6 +91,9 @@ class AcToolbar extends EventTarget {
       contentHtml += '<p>Message: ' + this.licenseStatus_.message + '</p>';
     }
 
+    // todo: debug
+    // this.dashboardId_ = this.dashboardId_ || 'lhDktD';
+    //
     contentHtml += `
 <div id="about-message"><span class="text"></span></div>
 <form id="ac-activation-form">
@@ -104,7 +107,6 @@ class AcToolbar extends EventTarget {
   const form = document.querySelector('#ac-activation-form');
   const input = form.code;
   const about = document.getElementById('about-message');
-  window['about'] = about;
   
   function setMessage(txt, error = false) {
     about.classList.remove(error ? 'success' : 'error');
@@ -125,25 +127,15 @@ function sendCode(e) {
   const code = input.value;
   if (code.length === 32) {
     const requestBody = 'dashboardId=${this.dashboardId_}&activationCode=' + code;
-    console.log(requestBody);
     fetch('https://www.anychart.com/licenses-checker/fblink', {
       method: 'POST',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded'
-      },
+      headers: {'content-type': 'application/x-www-form-urlencoded'},
       body: requestBody
     })
     .then(r => r.json())
     .then(r => {
-      if (r.message.indexOf("can't find") !== -1) {
-         setMessage('Activation failed. Please contact support.', true);
-         
-      }else if (r.message.indexOf("code missing") !== -1) {
-        setMessage('Activation code missing.', true);
-        
-      }else if (r.message.indexOf("successful") !== -1) {
-        setMessage('Activation successful!', false);
-      }
+//      console.log(r);
+      setMessage(r.message, true);
     });
     
   } else {
