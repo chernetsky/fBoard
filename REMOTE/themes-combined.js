@@ -22,15 +22,15 @@
       }
     },
     'cartesianBase': {
-      // 'scales': [
-      //   {
-      //     'type': 'date-time',
-      //     'maxCount': 5
-      //   },
-      //   {
-      //     'type': 'linear'
-      //   }
-      // ],
+      'scales': [
+        {
+          'type': 'date-time',
+          'maxCount': 5
+        },
+        {
+          'type': 'linear'
+        }
+      ],
       'defaultSeriesSettings': {
         'base': {
           'normal': {

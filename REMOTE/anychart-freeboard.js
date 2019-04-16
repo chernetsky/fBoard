@@ -238,6 +238,7 @@ if (!anychart['anychart-freeboard']) {
         editor.step('data', false);
         editor.step('chart', false);
         editor.step('export', false);
+        editor.pluginMode('freeboard');
         editor.data({data: dataSet});
 
         if (!opt_autoChart && currentSettings.editor_model) {
