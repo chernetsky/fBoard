@@ -20,12 +20,12 @@
   /**
    * Это раскомментировать для тестирования на реальном дашборде
    */
-  //const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
+  const remoteBaseUrl = 'https://static.anychart.com/demos/freeboard20/REMOTE';
 
   /**
    * Это раскомментировать для локальной разработки
    */
-  const remoteBaseUrl = '/fBoard/REMOTE';
+  // const remoteBaseUrl = '/fBoard/REMOTE';
 
   freeboard.loadWidgetPlugin({
     type_name: 'anychart_freeboard_plugin',
