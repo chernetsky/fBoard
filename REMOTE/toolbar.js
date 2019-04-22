@@ -60,7 +60,7 @@ class AcToolbar extends EventTarget {
    * @return {jQuery}
    */
   getToolsElement() {
-    return this.element.closest('li').find('section').find('ul.board-toolbar');
+    return this.element.parent().find('.board-toolbar');
   }
 
   /**
@@ -134,7 +134,6 @@ function sendCode(e) {
     })
     .then(r => r.json())
     .then(r => {
-//      console.log(r);
       setMessage(r.message, true);
     });
     
