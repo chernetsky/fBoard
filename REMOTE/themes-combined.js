@@ -51,6 +51,31 @@
         }
       }
     },
+    'bar': {
+      'scales': [
+        {
+          'type': 'date-time',
+          'maxCount': 5,
+          'inverted': true
+        },
+        {
+          'type': 'linear',
+          'stackDirection': 'reverse'
+        }
+      ]
+    },
+    'column': {
+      'scales': [
+        {
+          'type': 'date-time',
+          'maxCount': 5
+        },
+        {
+          'type': 'linear',
+          'softMinimum': 0
+        }
+      ]
+    },
     'mekko': {
       'defaultXAxisSettings': {
         'title': {

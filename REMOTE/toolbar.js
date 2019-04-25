@@ -100,7 +100,8 @@ class AcToolbar extends EventTarget {
     <input id="code" class="ac-input" maxlength="32" placeholder="Paste your activation code">
     <div class="ac-buttons">
         <button id="activate" name="activate" type="submit" class="ac-btn primary">Activate</button>
-        <a id="buy" class="ac-btn warning" target="_blank" href="https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-buy">Buy</a>
+        <a id="buy" class="ac-btn warning" target="_blank" 
+        href="https://www.anychart.com/products/freeboard/buy/?utm_source=freeboard-buy">Buy</a>
     </div>
 </form>
 <script>

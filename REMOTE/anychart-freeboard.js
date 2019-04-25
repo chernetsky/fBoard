@@ -259,14 +259,16 @@ if (!anychart['anychart-freeboard']) {
           case 'expired':
             overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
             overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'ANYCHART EXPIRED LICENSE'});
-            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-expired'});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'],
+              'value': 'https://www.anychart.com/products/freeboard/overview?utm_source=freeboard-expired'});
             freeboard.addStyle(".anychart-credits-text", "color:red;");
             break;
           default: {
             // trial, invalid, Not processed
             overrides.push({'key': [['chart'], ['settings'], 'credits().enabled()'], 'value': true});
             overrides.push({'key': [['chart'], ['settings'], 'credits().text()'], 'value': 'AnyChart Trial Version'});
-            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'], 'value': 'https://www.anychart.com/technical-integrations/samples/qlik-charts/buy/?utm_source=qlik-trial'});
+            overrides.push({'key': [['chart'], ['settings'], 'credits().url()'],
+              'value': 'https://www.anychart.com/products/freeboard/overview?utm_source=freeboard-trial'});
           }
         }
 

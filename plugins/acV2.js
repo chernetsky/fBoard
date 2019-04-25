@@ -78,6 +78,22 @@
             value: 'column'
           },
           {
+            name: 'Bar',
+            value: 'bar'
+          },
+          {
+            name: 'Radar',
+            value: 'radar'
+          },
+          {
+            name: 'Column (stacked by value)',
+            value: 'column-stacked-value'
+          },
+          {
+            name: 'Bar (stacked by value)',
+            value: 'bar-stacked-value'
+          },
+          {
             name: 'Scatter',
             value: 'scatter'
           },
